@@ -84,50 +84,62 @@ function toggleAdminPanel(event) {
 
 async function carregarUsuariosNoPainel() {
     const adminBox = document.getElementById('sys-admin-panel');
-    const tabelaAntiga = document.getElementById('adm-usuarios-table-container');
+    let tabelaAntiga = document.getElementById('adm-usuarios-table-container');
     if (tabelaAntiga) tabelaAntiga.remove();
+
+    // Cria um container temporário de carregamento
+    const containerTable = document.createElement('div');
+    containerTable.id = 'adm-usuarios-table-container';
+    containerTable.style.marginTop = '30px';
+    containerTable.style.borderTop = '1px dashed var(--neon-purple)';
+    containerTable.style.paddingTop = '20px';
+    containerTable.innerHTML = `<p style="color: var(--neon-blue); font-style: italic;">Buscando lista de clientes no banco NEON...</p>`;
+    adminBox.appendChild(containerTable);
 
     try {
         const resposta = await fetch(`${API_URL}/listar-contatos`);
         if (!resposta.ok) throw new Error("Erro ao buscar registros.");
         
         const usuarios = await resposta.json();
-        const containerTable = document.createElement('div');
-        containerTable.id = 'adm-usuarios-table-container';
-        containerTable.style.marginTop = '30px';
-        containerTable.style.borderTop = '1px dashed var(--neon-purple)';
-        containerTable.style.paddingTop = '20px';
-
+        
         let htmlTabela = `
             <h3 style="font-family:var(--font-display); color:var(--neon-purple); margin-bottom:15px; font-size:1.1rem; text-transform:uppercase;">
                 <i class="fa-solid fa-address-book"></i> Contatos e Endereços na Base de Dados (NEON)
             </h3>
+            <button onclick="carregarUsuariosNoPainel()" style="margin-bottom: 15px; padding: 8px 16px; background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue); cursor: pointer; font-family: var(--font-display); text-transform: uppercase; font-size: 0.8rem;">🔄 Atualizar Lista</button>
             <div style="overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:#fff; text-align:left; min-width: 1000px;">
                     <thead>
                         <tr style="border-bottom:2px solid var(--neon-purple); color:var(--neon-blue); text-transform:uppercase;">
                             <th style="padding:10px;">Data/Hora</th>
-                            <th style="padding:10px;">Nome</th>
+                            <th style="padding:10px;">Nome do Cliente</th>
                             <th style="padding:10px;">WhatsApp</th>
                             <th style="padding:10px;">E-mail</th>
                             <th style="padding:10px;">Endereço</th>
                             <th style="padding:10px;">CEP</th>
                             <th style="padding:10px;">Cidade/Estado</th>
-                            <th style="padding:10px;">Mensagem</th>
+                            <th style="padding:10px;">Mensagem Enviada</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
 
-        if (usuarios.length === 0) {
-            htmlTabela += `<tr><td colspan="8" style="padding:15px; text-align:center; color:var(--text-muted);">Nenhum contato cadastrado na nuvem.</td></tr>`;
+        if (!usuarios || usuarios.length === 0) {
+            htmlTabela += `<tr><td colspan="8" style="padding:15px; text-align:center; color:var(--text-muted);">Nenhum cliente cadastrado na nuvem.</td></tr>`;
         } else {
             usuarios.forEach(u => {
+                // Formata a data vinda do banco de dados
+                const dataFormatada = u.data_cadastro ? new Date(u.data_cadastro).toLocaleString('pt-BR') : 'Não informada';
+                // Limpa caracteres do whatsapp para criar link direto do zap
+                const zapLimpo = u.whatsapp ? u.whatsapp.replace(/\D/g,'') : '';
+
                 htmlTabela += `
                     <tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition:background 0.2s;" onmouseover="this.style.backgroundColor='rgba(157,0,255,0.05)'" onmouseout="this.style.backgroundColor='transparent'">
-                        <td style="padding:10px; white-space:nowrap; color:var(--text-muted);">${u.data_cadastro}</td>
+                        <td style="padding:10px; white-space:nowrap; color:var(--text-muted);">${dataFormatada}</td>
                         <td style="padding:10px; font-weight:bold; color:#fff;">${u.nome}</td>
-                        <td style="padding:10px; color:var(--neon-blue); white-space:nowrap;">${u.whatsapp}</td>
+                        <td style="padding:10px; color:var(--neon-blue); white-space:nowrap;">
+                            <a href="https://wa.me/${zapLimpo}" target="_blank" style="color: var(--neon-blue); text-decoration: none;">${u.whatsapp} 🔗</a>
+                        </td>
                         <td style="padding:10px;">${u.email}</td>
                         <td style="padding:10px; color:var(--text-muted);">${u.endereco}</td>
                         <td style="padding:10px; color:var(--text-muted);">${u.cep}</td>
@@ -140,10 +152,10 @@ async function carregarUsuariosNoPainel() {
 
         htmlTabela += `</tbody></table></div>`;
         containerTable.innerHTML = htmlTabela;
-        adminBox.appendChild(containerTable);
 
     } catch (erro) {
         console.error("Erro ao carregar dados no painel corporativo:", erro);
+        containerTable.innerHTML = `<p style="color: #ff0055; font-weight: bold;">❌ Erro ao conectar com o banco de dados NEON no Render.</p>`;
     }
 }
 
@@ -320,7 +332,10 @@ async function executarOrdemSalvarTxt(event) {
         });
 
         if (resposta.ok) {
-            alert(`Obrigado, ${payload.nome}!\nSeus dados foram salvos no banco de dados e as informações de envio e mensagem foram transmitidas à nossa gerência.`);
+            // 🌟 Mensagem solicitada confirmando cadastro e mensagens transmitidas
+            alert(`✅ Cadastro e envio de mensagem confirmados com sucesso!\nObrigado, ${payload.nome}, suas especificações foram salvas na nuvem.`);
+            
+            // 🌟 Limpa e reinicia o formulário para permitir novos cadastros
             reiniciarSistema();
             document.getElementById('footer-contact-box').style.display = 'none';
         } else {

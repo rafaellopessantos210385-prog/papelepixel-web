@@ -313,6 +313,7 @@ function inserirMensagemUI(role, texto) {
 async function executarOrdemSalvarTxt(event) {
     event.preventDefault();
     
+    // Mapeamento exato capturando os IDs do index.html (c-name, c-email, etc.)
     const payload = {
         nome:     document.getElementById('c-name').value,
         email:    document.getElementById('c-email').value,
@@ -331,20 +332,33 @@ async function executarOrdemSalvarTxt(event) {
             body: JSON.stringify(payload)
         });
 
+        // Se o banco salvou ou se o servidor retornou sucesso
         if (resposta.ok) {
-            // 🌟 Mensagem solicitada confirmando cadastro e mensagens transmitidas
-            alert(`✅ Cadastro e envio de mensagem confirmados com sucesso!\nObrigado, ${payload.nome}, suas especificações foram salvas na nuvem.`);
+            // 1. Exibe o alerta de sucesso com o nome digitado
+            alert(`✅ Cadastro e envio de mensagem confirmados com sucesso!\nObrigado, ${payload.nome}.`);
             
-            // 🌟 Limpa e reinicia o formulário para permitir novos cadastros
+            // 2. FORÇA a limpeza manual de cada campo na tela para não ter erro
+            document.getElementById('c-name').value = "";
+            document.getElementById('c-email').value = "";
+            document.getElementById('c-whatsapp').value = "";
+            document.getElementById('c-address').value = "";
+            document.getElementById('c-cep').value = "";
+            document.getElementById('c-city').value = "";
+            document.getElementById('c-state').value = "";
+            document.getElementById('c-message').value = "";
+
+            // 3. Executa o reset dos cards e chat
             reiniciarSistema();
+            
+            // 4. Fecha a janela do rodapé
             document.getElementById('footer-contact-box').style.display = 'none';
         } else {
             const serverError = await resposta.json();
-            alert(`Falha no processamento: ${serverError.erro || 'Tente novamente.'}`);
+            alert(`❌ Falha no processamento do servidor: ${serverError.erro || 'Tente novamente.'}`);
         }
     } catch (erro) {
         console.error("Erro de comunicação com o Back-end:", erro);
-        alert("Erro ao conectar à API externa. Certifique-se de que o backend está ativo.");
+        alert("❌ Erro ao conectar à API. O seu banco de dados ou serviço de e-mail no Back-end pode estar fora do ar.");
     }
 }
 
@@ -353,7 +367,7 @@ async function executarOrdemSalvarTxt(event) {
    ============================================================ */
 function reiniciarSistema() {
     const formContato = document.getElementById('contact-form-system');
-    if (formContato) formContato.reset();
+    if (formContato) formContato.reset(); // Reseta o form por garantia
 
     document.querySelectorAll('.service-card').forEach(card => {
         card.classList.remove('selected');

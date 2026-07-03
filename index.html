@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papel & Pixel — Soluções Acadêmicas & Digitais</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="cyber-header">
+        <div class="logo">PAPEL & PIXEL</div>
+        <nav>
+            <a href="#system-calc-anchor" class="nav-link"><i class="fa-solid fa-calculator"></i> Orçamento</a>
+            <a href="#" onclick="toggleAdminPanel(event)" class="admin-btn"><i class="fa-solid fa-lock"></i> Painel ADM</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        
+        <!-- PAINEL ADMINISTRATIVO REAPROVEITADO -->
+        <section id="sys-admin-panel" class="admin-panel" style="display: none;">
+            <h2><i class="fa-solid fa-terminal"></i> Terminal de Controle Operacional</h2>
+            <p class="panel-subtitle">Painel restrito para alteração de valores de mercado e gerenciamento da base de dados PostgreSQL.</p>
+            
+            <div class="admin-grid-inputs">
+                <div class="adm-group">
+                    <label>Valor Base ABNT (R$)</label>
+                    <input type="number" id="adm-val-abnt" value="120.00" step="0.01">
+                </div>
+                <div class="adm-group">
+                    <label>Valor Base ADM (R$)</label>
+                    <input type="number" id="adm-val-adm" value="55.00" step="0.01">
+                </div>
+                <div class="adm-group">
+                    <label>Valor Base Inovação (R$)</label>
+                    <input type="number" id="adm-val-inovacao" value="85.00" step="0.01">
+                </div>
+                <div class="adm-group">
+                    <label>Pág. Preto & Branco (R$)</label>
+                    <input type="number" id="adm-val-pb" value="0.50" step="0.01">
+                </div>
+                <div class="adm-group">
+                    <label>Pág. Colorida (R$)</label>
+                    <input type="number" id="adm-val-color" value="1.50" step="0.01">
+                </div>
+                <div class="adm-group">
+                    <label>Taxa Motoboy (R$)</label>
+                    <input type="number" id="adm-val-delivery" value="15.00" step="0.01">
+                </div>
+            </div>
+            <button onclick="salvarNovosValoresAdmin()" class="btn-save-adm">Gravar Novas Diretrizes Comerciais</button>
+        </section>
+
+        <section id="system-calc-anchor" class="system-section">
+            <div class="section-title">
+                <h2>Selecione o Serviço Operacional Base</h2>
+                <p>Escolha uma categoria para inicializar a computação do seu orçamento em tempo real.</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card selected" onclick="selectServiceCard('lanhouse_base', event)">
+                    <input type="radio" name="srv-radio-group" value="lanhouse_base" checked style="display:none;">
+                    <i class="fa-solid fa-desktop icon"></i>
+                    <h3>Serviços Lan House</h3>
+                    <p>Consultas, envios de e-mails, inscrições em certames públicos e impressões avulsas de documentos.</p>
+                    <span class="price-tag">Taxa Mínima R$ 10,00</span>
+                </div>
+
+                <div class="service-card" onclick="selectServiceCard('adm_juridico', event)">
+                    <input type="radio" name="srv-radio-group" value="adm_juridico" style="display:none;">
+                    <i class="fa-solid fa-scale-balanced icon"></i>
+                    <h3>Serviço Adm &amp; Jurídico</h3>
+                    <p>Estruturação de contratos comerciais, peças de procuração e gerenciamento documental técnico.</p>
+                    <span class="price-tag">A partir de R$ 55,00</span>
+                </div>
+
+                <div class="service-card" onclick="selectServiceCard('academico_abnt', event)">
+                    <input type="radio" name="srv-radio-group" value="academico_abnt" style="display:none;">
+                    <i class="fa-solid fa-graduation-cap icon"></i>
+                    <h3>Normatização ABNT</h3>
+                    <p>Ajuste e padronização completa de TCCs, Monografias, teses de mestrado e artigos científicos.</p>
+                    <span class="price-tag">A partir de R$ 120,00</span>
+                </div>
+
+                <div class="service-card" onclick="selectServiceCard('inovacao_radical', event)">
+                    <input type="radio" name="srv-radio-group" value="inovacao_radical" style="display:none;">
+                    <i class="fa-solid fa-cubes icon"></i>
+                    <h3>Inovação Radical</h3>
+                    <p>Modelos avançados contendo integração com QR Codes dinâmicos e registros de integridade em Blockchain.</p>
+                    <span class="price-tag">A partir de R$ 85,00</span>
+                </div>
+            </div>
+
+            <!-- ADICIONAIS & CONFIGURAÇÃO DO ORÇAMENTO -->
+            <div class="addons-container">
+                <div class="addon-box">
+                    <label for="addon-print-type">Tipo de Impressão Complementar</label>
+                    <select id="addon-print-type" onchange="atualizarPrecoLiveSystem()">
+                        <option value="none">Sem Impressão (Apenas Arquivo Digital)</option>
+                        <option value="pb">Impressão Laser — Preto &amp; Branco</option>
+                        <option value="color">Impressão High-Res — Colorida</option>
+                    </select>
+                </div>
+
+                <div class="addon-box">
+                    <label for="addon-pages-qty">Volume de Páginas do Documento</label>
+                    <input type="number" id="addon-pages-qty" value="0" min="0" oninput="atualizarPrecoLiveSystem()">
+                </div>
+
+                <div class="addon-box">
+                    <label for="delivery-method">Modalidade de Logística / Recebimento</label>
+                    <select id="delivery-method" onchange="atualizarPrecoLiveSystem()">
+                        <option value="pickup">Retirada Física Balcão (Taxa Zero)</option>
+                        <option value="delivery">Despacho via Motoboy (Entrega Expressa)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ALERTA COMERCIAL -->
+            <div id="comercial-shortcut" class="cyber-alert" style="display:none;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong>Aviso de Volume:</strong> Demandas com mais de 150 páginas possuem direito a descontos escalonados.
+                    Sugerimos contato imediato via <a href="https://wa.me/5586988303158" target="_blank">WhatsApp Comercial</a>.
+                </div>
+            </div>
+
+            <!-- VISUALIZADOR DE PREÇO LIVE -->
+            <div class="live-price-display">
+                <span class="label">Total Estimado do Projeto:</span>
+                <span id="system-live-total" class="amount">R$ 10,00</span>
+            </div>
+        </section>
+
+        <!-- ASSISTENTE VIRTUAL CHATBOT -->
+        <section class="chat-section">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <div class="pulse-indicator"></div>
+                    <h3>P&amp;P_Chat — Inteligência Operacional</h3>
+                </div>
+                <span id="chat-status-indicator" class="status">● OPERACIONAL</span>
+            </div>
+            
+            <div id="chat-messages-container" class="chat-body">
+                <div class="chat-msg bot">
+                    Olá! Eu sou o <strong>P&amp;P_Chat</strong>. Posso lhe dar suporte sobre
+                    formatação e soluções digitais.<br><br>
+                    Se precisar de <strong>impressões adicionais</strong>, fale o tipo
+                    (Preto e Branco ou Colorida) e a quantidade de páginas.
+                    Caso não saiba a quantidade, me avise para eu lhe transferir ao Comercial!
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <input type="text" id="chat-input-text" placeholder="Digite sua dúvida ou comando operacional...">
+                <button onclick="dispararMensagemChat()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================================
+         RODAPÉ INTEGRADO COM A JANELA DE CADASTRO E ENVIO
+         ============================================================ */ -->
+    <footer class="cyber-footer">
+        <p>© 2026 Papel & Pixel. Conectividade Segura em Nuvem.</p>
+        <p>Precisa enviar dados de entrega ou uma mensagem especial?</p>
+        <button onclick="toggleFooterContact(event)" class="btn-open-contact">
+            <i class="fa-solid fa-envelope-open-text"></i> Abrir Central de Cadastro & Envio
+        </button>
+
+        <div id="footer-contact-box" class="footer-contact-window" style="display: none;">
+            <div class="form-header-cyber">
+                <h2><i class="fa-solid fa-satellite-dish"></i> Central de Cadastro & Envio</h2>
+                <p>Preencha suas informações. Os dados serão gravados em nuvem e encaminhados para a gerência.</p>
+            </div>
+
+            <form id="contact-form-system" onsubmit="executarOrdemSalvarTxt(event)">
+                <div class="form-grid-cyber">
+                    <div class="input-group-cyber col-span-2">
+                        <label for="c-name">Nome Completo</label>
+                        <input type="text" id="c-name" required placeholder="Ex: Rafael Lopes Santos">
+                    </div>
+
+                    <div class="input-group-cyber">
+                        <label for="c-whatsapp">WhatsApp</label>
+                        <input type="tel" id="c-whatsapp" required placeholder="(00) 00000-0000">
+                    </div>
+
+                    <div class="input-group-cyber">
+                        <label for="c-email">E-mail</label>
+                        <input type="email" id="c-email" required placeholder="seuemail@exemplo.com">
+                    </div>
+
+                    <div class="input-group-cyber col-span-2">
+                        <label for="c-address">Endereço Completo (Rua, Número, Bairro, Complemento)</label>
+                        <input type="text" id="c-address" required placeholder="Rua, nº, Bairro, Apto, Bloco...">
+                    </div>
+
+                    <div class="input-group-cyber">
+                        <label for="c-cep">CEP</label>
+                        <input type="text" id="c-cep" required placeholder="00000-000">
+                    </div>
+
+                    <div class="input-group-cyber">
+                        <label for="c-city">Cidade</label>
+                        <input type="text" id="c-city" required placeholder="Sua Cidade">
+                    </div>
+
+                    <div class="input-group-cyber col-span-2">
+                        <label for="c-state">Estado</label>
+                        <input type="text" id="c-state" required placeholder="Seu Estado">
+                    </div>
+
+                    <div class="input-group-cyber col-span-2">
+                        <label for="c-message">Sua Mensagem / Instruções do Pedido</label>
+                        <textarea id="c-message" rows="4" required placeholder="Escreva aqui sua mensagem ou especificações adicionais de entrega..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions-cyber">
+                    <button type="submit" class="btn-send-cyber">
+                        <i class="fa-solid fa-paper-plane"></i> Confirmar Envio & Salvar na Nuvem
+                    </button>
+                </div>
+            </form>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
